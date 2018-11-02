@@ -1,0 +1,21 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$Change = <<PERM
+dos2unix /tmp/test.sh && find ~/.test/files/ -type f |xargs dos2unix
+PERM
+Vagrant.configure("2") do |config|
+  # Pull the vagrant box
+  config.vm.box = "dev/box"
+  # Set user under which provisioners will run
+  config.ssh.username = "vagrant"
+  config.ssh.password = "vagrant"
+  # Load up all possible files as a folder (to avoid erros on missing files)
+  config.vm.provision "file", source: "files", destination: "~/.test/"
+  config.vm.provision "file", source: "test.sh", destination: "/tmp/test.sh"
+  config.vm.provision "shell", privileged: false, inline: $Change
+  config.vm.provision :shell, privileged: false, :inline => ". /tmp/test.sh"
+  config.vm.provider "virtualbox" do |vb|
+  vb.name = "devbox"
+  end
+end
