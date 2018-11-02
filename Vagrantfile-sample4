@@ -1,0 +1,35 @@
+# This defines the version of vagrant
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$Change = <<FILE_PERM
+dos2unix /tmp/script.sh
+FILE_PERM
+
+Vagrant.configure(2) do |config|
+	# Specifying the box we wish to use
+	config.vm.box = "ubuntu/xenial64"
+	# Adding Bridged Network Adapter
+	config.vm.network "public_network"
+	config.ssh.username = "vagrant"
+    config.ssh.password = "vagrant"
+	config.vm.provision "shell", inline: <<-SHELL
+         apt-get install -y dos2unix
+         SHELL
+	config.vm.provision "file", source: "script.sh", destination: "/tmp/script.sh"
+	config.vm.provision "shell", privileged: false, inline: $Change
+	config.vm.provision :shell, privileged: false, :inline => ". /tmp/script.sh"
+	# Iterating the loop for three times
+	(1..3).each do |i|
+		# Defining VM properties
+		config.vm.define "devbox#{i}" do |node|
+			# Specifying the provider as VirtualBox and naming the VM's
+			config.vm.provider "virtualbox" do |node|
+				# The VM will be named as edureka_vm{i}
+				node.name = "devbox#{i}" 
+				node.memory = 2048
+                node.cpus = 2
+			end
+		end
+	end
+end
